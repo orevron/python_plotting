@@ -22,15 +22,15 @@ class pcap_parser:
             if (hasattr(pkt.payload, 'src') and hasattr(pkt.payload, 'dst')):
                 src[pkt.payload.src] += 1
                 dst[pkt.payload.dst] += 1
-        s = []
-        d = []
+        sorted_src = []
+        sorted_dst = []
         for k in sorted(src):
-            s.append(src[k])
+            sorted_src.append(src[k])
         for k in sorted(dst):
-            d.append(dst[k])
-        plt.bar(range(len(src)), s, align='center', label='Source', color='green')
+            sorted_dst.append(dst[k])
+        plt.bar(range(len(src)), sorted_src, align='center', label='Source', color='green')
         plt.xticks(range(len(src)), sorted(src.keys()))
-        plt.bar(range(len(dst)), d, align='center', label='Destination', color='red')
+        plt.bar(range(len(dst)), sorted_dst, align='center', label='Destination', color='red')
         plt.xticks(range(len(dst)), sorted(dst.keys()))
         plt.title('Sources and Destinations Count')
         plt.legend()
@@ -44,10 +44,10 @@ class pcap_parser:
         for pkt in self._res:
             if (hasattr(pkt.payload, 'proto')):
                 map[pkt.payload.payload.name] += 1
-        s = []
+        sorted_map = []
         for k in sorted(map):
-            s.append(map[k])
-        plt.bar(range(len(map)), s, color='purple', width=0.1)
+            sorted_map.append(map[k])
+        plt.bar(range(len(map)), sorted_map, color='purple', width=0.1)
         plt.xticks(range(len(map)), sorted(map.keys()))
         plt.title('Protocol Count')
         plt.show()
@@ -55,10 +55,10 @@ class pcap_parser:
 
 def main():
     while (True):
-        num = input('Enter file number or q to exit: ')
-        if (num == 'q'): return 0
-        print('\tLoading ' + num + '.cap file, please wait . . . ')
-        parser = pcap_parser('/home/orevron/Downloads/pcap/' + num + '.cap')
+        file_num = input('Enter file number or q to exit: ')
+        if (file_num == 'q'): return 0
+        print('\tLoading ' + file_num + '.cap file, please wait . . . ')
+        parser = pcap_parser('/home/orevron/Downloads/pcap/' + file_num + '.cap')
         while (True):
             print('Main Menu:')
             print('\t1. Source and destination count. \n\t2. Protocol count. \n\tq to exit')
@@ -72,8 +72,8 @@ def main():
                 return 0
             else:
                 print('Wrong entry. Please try again, or \'q\' to exit')
-            num = input('Press enter to continue,\n \'n\' to load new file\n \'q\' to exit: ')
-            if (num == 'n'):
+            file_num = input('Press enter to continue,\n \'n\' to load new file\n \'q\' to exit: ')
+            if (file_num == 'n'):
                 break
 
 
