@@ -31,7 +31,7 @@ class pcap_parser:
 
     def __export_pdf__(self, key):
         ans = 'z'
-        while ans != 'y' and ans != 'n':
+        while ans is not 'y' and ans is not 'n':
             ans = input("\tExport PDF [y/n]? ")
         if ans == 'y':
             try:
@@ -40,10 +40,10 @@ class pcap_parser:
                 print('\033[92mSucceed! PDF created.\033[0m')
             except SyntaxError:
                 print('\033[91mError occurred PDF not created.\033[0m')
-        ans = 'z'
-        while ans != 'y' and ans != 'n':
+        ans = ''
+        while ans is not 'y' and ans is not 'n':
             ans = input("\tExport png [y/n]? ")
-        if ans == 'y':
+        if ans is 'y':
             try:
                 filename = key + str(self.__getID__()) + '.png'
                 plt.savefig(filename, format='png')
@@ -133,35 +133,48 @@ class pcap_parser:
         self._res = []
 
 
-def load_file(file_num):
+def load_file():
+    file_num = input('Enter file number or q to exit: ')
+    if file_num == 'q': return 0
+    print('\tLoading ' + file_num + '.cap file, please wait . . . ')
     p = pcap_parser('/home/orevron/Downloads/pcap/' + str(file_num) + '.cap')
+    print('\t\033[92mDone!\033[0m')
     return p
+
+
+def end_plotting():
+    end_message1 = '\t\033[94m[any key]\033[0m to continue, \033[92m[n]'
+    end_message2 = '\033[0m to load new file \033[91m[q]\033[0m to exit: '
+    file_num = input(end_message1 + end_message2)
+    return file_num
+
+
+def draw_menu():
+    print('Main Menu:')
+    print('\t1. Source and destination count. \n\t2. Protocol count. \n\t3. Source user count. \n\tq to exit')
+    return input('Enter Option: ')
+
+
+def input_error():
+    print('\t\033[91mWrong entry. Please try again, or [q] to exit\033[0m')
 
 
 def main():
     while True:
-        file_num = input('Enter file number or q to exit: ')
-        if file_num == 'q': return 0
-        print('\tLoading ' + file_num + '.cap file, please wait . . . ')
-        parser = load_file(file_num=1)
-        print('\t\033[92mDone!\033[0m')
+        parser = load_file()
         while True:
-            print('Main Menu:')
-            print('\t1. Source and destination count. \n\t2. Protocol count. \n\t3. Source user count. \n\tq to exit')
-            choose = input('Enter Option: ')
-            if choose == '1':
+            choose = draw_menu()
+            if choose is '1':
                 parser.plot_source_and_destination_count()
-            elif choose == '2':
+            elif choose is '2':
                 parser.plot_protocol_count()
-            elif choose == '3':
+            elif choose is '3':
                 parser.plot_source_users_count()
-            elif choose == 'q':
+            elif choose is 'q':
                 return 0
             else:
-                print('\t\033[91mWrong entry. Please try again, or [q] to exit\033[0m')
-            end_message1 = '\t\033[94m[enter]\033[0m to continue, \033[92m[n]'
-            end_message2 = '\033[0m to load new file \033[91m[q]\033[0m to exit: '
-            file_num = input(end_message1 + end_message2)
+                input_error()
+            file_num = end_plotting()
             print('\n')
             if file_num == 'n':
                 parser.clear()
