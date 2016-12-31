@@ -21,8 +21,6 @@ import matplotlib.pyplot as plt
 class pcap_parser:
     id = 0
     _res = []
-    _used_func = {}
-    _values = {1: 'source', 2: 'protocol', 3: 'user'}
 
     def __init__(self, path):
         self._res = rdpcap(path).res
@@ -32,99 +30,112 @@ class pcap_parser:
         return self.id
 
     def __export_pdf__(self, key):
-        try:
-            filename = key + str(self.__getID__()) + '.pdf'
-            self._used_func[self._values[key]].savefig(filename, format='pdf')
-            print('\033[92mSucceed! PDF created.\033[0m')
-        except ValueError:
-            print('\033[91mError occurred PDF not created.\033[0m')
+        ans = 'z'
+        while ans != 'y' and ans != 'n':
+            ans = input("\tExport PDF [y/n]? ")
+        if ans == 'y':
+            try:
+                filename = key + str(self.__getID__()) + '.pdf'
+                plt.savefig(filename, format='pdf')
+                print('\033[92mSucceed! PDF created.\033[0m')
+            except SyntaxError:
+                print('\033[91mError occurred PDF not created.\033[0m')
+        ans = 'z'
+        while ans != 'y' and ans != 'n':
+            ans = input("\tExport png [y/n]? ")
+        if ans == 'y':
+            try:
+                filename = key + str(self.__getID__()) + '.png'
+                plt.savefig(filename, format='png')
+                print('\033[92mSucceed! PNG created.\033[0m')
+            except ValueError:
+                print('\033[91mError occurred PNG not created.\033[0m')
+
+        plt.clf()
 
     def plot_source_and_destination_count(self):
-        if self._values[1] in self._used_func:
-            self._used_func[self._values[1]].show()
-        else:
-            src = {}
-            dst = {}
-            for pkt in self._res:
-                if hasattr(pkt.payload, 'src') and hasattr(pkt.payload, 'dst'):
-                    src.update({pkt.payload.src: 0})
-                    dst.update({pkt.payload.dst: 0})
-            for pkt in self._res:
-                if hasattr(pkt.payload, 'src') and hasattr(pkt.payload, 'dst'):
-                    src[pkt.payload.src] += 1
-                    dst[pkt.payload.dst] += 1
-            sorted_src = []
-            sorted_dst = []
-            for k in sorted(src):
-                sorted_src.append(src[k])
-            for k in sorted(dst):
-                sorted_dst.append(dst[k])
-            p = plt
-            p.bar(range(len(src)), sorted_src, align='center', label='Source', color='green')
-            p.xticks(range(len(src)), sorted(src.keys()))
-            p.bar(range(len(dst)), sorted_dst, align='center', label='Destination', color='red')
-            p.xticks(range(len(dst)), sorted(dst.keys()))
-            p.title('Sources and Destinations Count')
-            p.legend()
-            self._used_func.update({self._values[1]: p})
-            print(self._used_func)
-            p.show()
-            # ans = 'z'
-            # while ans != 'y' and ans != 'n':
-            #     ans = input("\tExport PDF [y/n]? ")
-            # if ans == 'y':
-            #     self.__export_pdf__(self._values[1])
+        src = {}
+        dst = {}
+        for pkt in self._res:
+            if hasattr(pkt.payload, 'src') and hasattr(pkt.payload, 'dst'):
+                src.update({pkt.payload.src: 0})
+                dst.update({pkt.payload.dst: 0})
+        for pkt in self._res:
+            if hasattr(pkt.payload, 'src') and hasattr(pkt.payload, 'dst'):
+                src[pkt.payload.src] += 1
+                dst[pkt.payload.dst] += 1
+        sorted_src = []
+        sorted_dst = []
+        for k in sorted(src):
+            sorted_src.append(src[k])
+        for k in sorted(dst):
+            sorted_dst.append(dst[k])
+        plt.bar(range(len(src)), sorted_src, align='center', label='Source', color='green')
+        plt.xticks(range(len(src)), sorted(src.keys()))
+        plt.bar(range(len(dst)), sorted_dst, align='center', label='Destination', color='red')
+        plt.xticks(range(len(dst)), sorted(dst.keys()))
+        plt.title('Sources and Destinations Count')
+        plt.legend()
+        plt.show()
+        plt.bar(range(len(src)), sorted_src, align='center', label='Source', color='green')
+        plt.xticks(range(len(src)), sorted(src.keys()))
+        plt.bar(range(len(dst)), sorted_dst, align='center', label='Destination', color='red')
+        plt.xticks(range(len(dst)), sorted(dst.keys()))
+        plt.title('Sources and Destinations Count')
+        plt.legend()
+        self.__export_pdf__('source')
 
     def plot_protocol_count(self):
-        if hasattr(self._used_func, self._values[2]):
-            self._used_func[self._values[2]].show()
-        else:
-            protocol_map = {}
-            for pkt in self._res:
-                if hasattr(pkt.payload, 'proto'):
-                    protocol_map.update({pkt.payload.payload.name: 0})
-            for pkt in self._res:
-                if hasattr(pkt.payload, 'proto'):
-                    protocol_map[pkt.payload.payload.name] += 1
-            sorted_keys = []
-            sorted_vals = []
-            for k in sorted(protocol_map):
-                sorted_keys.append(k)
-                sorted_vals.append(protocol_map[k])
-            p = plt
-            p.pie(sorted_vals, labels=sorted_keys, startangle=90, shadow=True, autopct='1.1f%%')
-            p.title('Protocol Count')
-            p.show()
-            self._used_func.update({self._values[2]: p})
+        protocol_map = {}
+        for pkt in self._res:
+            if hasattr(pkt.payload, 'proto'):
+                protocol_map.update({pkt.payload.payload.name: 0})
+        for pkt in self._res:
+            if hasattr(pkt.payload, 'proto'):
+                protocol_map[pkt.payload.payload.name] += 1
+        sorted_keys = []
+        sorted_vals = []
+        for k in sorted(protocol_map):
+            sorted_keys.append(k)
+            sorted_vals.append(protocol_map[k])
+        plt.pie(sorted_vals, labels=sorted_keys, startangle=90, shadow=True, autopct='1.1%%')
+        plt.title('Protocol Count')
+        plt.show()
+        plt.pie(sorted_vals, labels=sorted_keys, startangle=90, shadow=True, autopct='1.1%%')
+        plt.title('Protocol Count')
+        self.__export_pdf__('protocol')
 
     def plot_source_users_count(self):
-        if hasattr(self._used_func, self._values[3]):
-            self._used_func[self._values[3]].show()
-        else:
-            users = {}
-            for current in self._res:
-                if hasattr(current, 'src'):
-                    users.update({current.src: 0})
-                    for pkt in self._res:
-                        if hasattr(pkt, 'src') and (current.src == pkt.src):
-                            users[current.src] += 1
-            total = 0
-            for k, v in users.items():
-                total += v
-            users.update({'Total': total})
-            sorted_users = []
-            for user in sorted(users):
-                sorted_users.append(users[user])
-            p = plt
-            p.bar(range(len(users)), sorted_users, color='green', width=0.1)
-            p.xticks(range(len(users)), sorted(users.keys()))
-            p.title('Packets Per Source Count')
-            p.show()
-            self._used_func.update({self._values[3]: p})
+        users = {}
+        for current in self._res:
+            if hasattr(current, 'src'):
+                users.update({current.src: 0})
+                for pkt in self._res:
+                    if hasattr(pkt, 'src') and (current.src == pkt.src):
+                        users[current.src] += 1
+        total = 0
+        for k, v in users.items():
+            total += v
+        users.update({'Total': total})
+        sorted_users = []
+        for user in sorted(users):
+            sorted_users.append(users[user])
+        plt.barh(range(len(users)), sorted_users, color='green')
+        plt.yticks(range(len(users)), sorted(users.keys()))
+        plt.title('Packets Per Source Count')
+        plt.show()
+        plt.barh(range(len(users)), sorted_users, color='green')
+        plt.yticks(range(len(users)), sorted(users.keys()))
+        plt.title('Packets Per Source Count')
+        self.__export_pdf__('users')
 
     def clear(self):
-        self._used_func = {}
         self._res = []
+
+
+def load_file(file_num):
+    p = pcap_parser('/home/orevron/Downloads/pcap/' + str(file_num) + '.cap')
+    return p
 
 
 def main():
@@ -132,7 +143,7 @@ def main():
         file_num = input('Enter file number or q to exit: ')
         if file_num == 'q': return 0
         print('\tLoading ' + file_num + '.cap file, please wait . . . ')
-        parser = pcap_parser('/home/orevron/Downloads/pcap/' + file_num + '.cap')
+        parser = load_file(file_num=1)
         print('\t\033[92mDone!\033[0m')
         while True:
             print('Main Menu:')
@@ -159,4 +170,5 @@ def main():
                 return 0
 
 
-main()
+if __name__ == '__main__':
+    main()
