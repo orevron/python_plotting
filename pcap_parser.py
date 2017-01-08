@@ -5,7 +5,6 @@ from scapy.all import *
 import matplotlib.pyplot as plt
 
 
-# from sets import Set
 # class bcolors:
 #     HEADER = '\033[95m'
 #     OKBLUE = '\033[94m'
@@ -29,9 +28,9 @@ class pcap_parser:
         self.id += 1
         return self.id
 
-    def __export_pdf__(self, key):
+    def __export__(self, key):
         ans = 'z'
-        while ans is not 'y' and ans is not 'n':
+        while ans != 'y' and ans != 'n':
             ans = input("\tExport PDF [y/n]? ")
         if ans == 'y':
             try:
@@ -50,7 +49,6 @@ class pcap_parser:
                 print('\033[92mSucceed! PNG created.\033[0m')
             except ValueError:
                 print('\033[91mError occurred PNG not created.\033[0m')
-
         plt.clf()
 
     def plot_source_and_destination_count(self):
@@ -83,7 +81,7 @@ class pcap_parser:
         plt.xticks(range(len(dst)), sorted(dst.keys()))
         plt.title('Sources and Destinations Count')
         plt.legend()
-        self.__export_pdf__('source')
+        self.__export__('source')
 
     def plot_protocol_count(self):
         protocol_map = {}
@@ -103,7 +101,23 @@ class pcap_parser:
         plt.show()
         plt.pie(sorted_vals, labels=sorted_keys, startangle=90, shadow=True, autopct='1.1%%')
         plt.title('Protocol Count')
-        self.__export_pdf__('protocol')
+        self.__export__('protocol')
+
+    def plot_ttl_distribution(self):
+        bins = range(0, 80, 5)
+        # bins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80]
+        ttls = []
+        for pkt in self._res:
+            if hasattr(pkt.payload, 'ttl'):
+                ttls.append(pkt.payload.ttl)
+        plt.hist(ttls, bins, histtype='bar', rwidth=0.8)
+        plt.title('Packet TTL Distribution')
+        plt.xlabel('TTL')
+        plt.ylabel('Amount')
+        plt.show()
+        plt.hist(ttls, bins, histtype='bar', rwidth=0.8)
+        plt.title('Packet TTL Distribution')
+        self.__export__('ttl')
 
     def plot_source_users_count(self):
         users = {}
@@ -127,7 +141,7 @@ class pcap_parser:
         plt.barh(range(len(users)), sorted_users, color='green')
         plt.yticks(range(len(users)), sorted(users.keys()))
         plt.title('Packets Per Source Count')
-        self.__export_pdf__('users')
+        self.__export__('users')
 
     def clear(self):
         self._res = []
@@ -137,7 +151,7 @@ def load_file():
     file_num = input('Enter file number or q to exit: ')
     if file_num == 'q': return 0
     print('\tLoading ' + file_num + '.cap file, please wait . . . ')
-    p = pcap_parser('/home/orevron/Downloads/pcap/' + str(file_num) + '.cap')
+    p = pcap_parser('/home/orevron/PycharmProjects/local/pcap/' + str(file_num) + '.cap')
     print('\t\033[92mDone!\033[0m')
     return p
 
@@ -151,7 +165,9 @@ def end_plotting():
 
 def draw_menu():
     print('Main Menu:')
-    print('\t1. Source and destination count. \n\t2. Protocol count. \n\t3. Source user count. \n\tq to exit')
+    menu1 = '\t1. Source and destination count. \n\t2. Protocol count. \n\t'
+    menu2 = '3. Source user count. \n\t4. TTL Distribution. \n\tq to exit'
+    print(menu1 + menu2)
     return input('Enter Option: ')
 
 
@@ -170,6 +186,8 @@ def main():
                 parser.plot_protocol_count()
             elif choose is '3':
                 parser.plot_source_users_count()
+            elif choose is '4':
+                parser.plot_ttl_distribution()
             elif choose is 'q':
                 return 0
             else:
